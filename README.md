@@ -1,2 +1,4 @@
 # csv_anonymizer
-data anonymizer. unanonymizer, verification of anonymizing.
+-[x] data anonymizer
+-[x] unanonymizer
+-[x] verification of anonymizing
