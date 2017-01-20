@@ -17,25 +17,34 @@ def anonymize_data(iv, cipher, data):
     return msg.encode("hex")
 
 
-# with open("input_file.csv", "rb") as f:
-#     # reader = csv.reader(f, delimiter="\t")
-#     reader = csv.reader(f, delimiter="\n")
-#     for row in reader:
-#         # content = list(row[i] for i in included_cols)
-#         print row[0]
+def get_header():
+    with open("input_file.csv") as f:
+        d_reader = csv.DictReader(f)
+        headers = d_reader.fieldnames
+    f.close()
+    return headers
 
 
-with open("input_file.csv") as f:
-    rows = csv.reader(f)
-    total_line, total_column = 0, 0
-    for line in f:
-        total_column = len(line.split(','))
-        break
-    for line in f:
-        data = line.split(',')[1]
-        key = get_hash_key()
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(key, AES.MODE_CFB, iv)
+def write_to_csv():
+    with open('output1.csv', 'w') as csvfile:
+        headers = get_header()
+        fieldnames = headers
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
 
-        anonymized_data = anonymize_data(iv, cipher, data)
-        print anonymized_data
+        with open("input_file.csv") as f:
+            # rows = csv.reader(f)
+            # total_column = len(headers)
+            for line in f:
+                data = line.split(',')
+                anonymized_data = anonymize_data(iv, cipher, data[1])
+                dict = {}
+                for name in headers:
+                    dict[name] = anonymized_data
+                writer.writerow(dict)
+
+
+key = get_hash_key()
+iv = Random.new().read(AES.block_size)
+cipher = AES.new(key, AES.MODE_CFB, iv)
+write_to_csv()
