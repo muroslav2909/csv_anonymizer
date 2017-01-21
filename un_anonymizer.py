@@ -2,6 +2,7 @@ from Crypto.Cipher import AES
 import os
 import csv
 import base64
+import sys
 
 def get_hash_key():
     with open('hash_key.txt', 'r+') as f:
@@ -22,7 +23,7 @@ def get_header():
     f.close()
     return headers
 
-def write_to_csv(cipher):
+def write_to_csv(cipher, names=None):
     with open('output2.csv', 'w') as csvfile:
         headers = get_header()
         fieldnames = headers
@@ -35,13 +36,30 @@ def write_to_csv(cipher):
                 data = lines[i].split(',')
                 dict = {}
                 counter = 0
+
                 for name in headers:
-                    un_anonymized_data = un_anonymize_data(cipher, data[counter]).lstrip()
+                    if not names:
+                        un_anonymized_data = un_anonymize_data(cipher, data[counter]).lstrip()
+                    else:
+                        un_anonymized_data = data[counter]
+                        if name in names:
+                            un_anonymized_data = un_anonymize_data(cipher, data[counter]).lstrip()
+
                     dict[name] = un_anonymized_data
                     counter += 1
                 writer.writerow(dict)
 
 key = get_hash_key()
 cipher = AES.new(key, AES.MODE_ECB)
-write_to_csv(cipher)
+# write_to_csv(cipher)
 
+if 'all' in sys.argv:
+    write_to_csv(cipher)
+elif 'names' in sys.argv:
+    column_names = raw_input("Please enter column names separeted by comma\n")
+    try:
+        write_to_csv(cipher, column_names)
+    except:
+        print "Please, be sure that you are entered anonymize column names."
+else:
+    print "Availible arguments are:\n all - unanonymize all column\n names - unanonymize choosen columns\n\n Please try: python un_anonymizer.py all or python un_anonymizer.py names"
