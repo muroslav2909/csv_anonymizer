@@ -24,14 +24,19 @@ def get_header():
     f.close()
     return headers
 
-def write_to_csv(cipher, names=None):
+def write_to_csv(cipher, names=None, anonymize_header=False):
     with open('output1.csv', 'w') as csvfile:
         headers = get_header()
         fieldnames = headers
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+        if not anonymize_header:
+            writer.writeheader()
         with open("input_file.csv") as f:
-            lines = f.read().splitlines()[1:]
+            if not anonymize_header:
+                lines = f.read().splitlines()[1:]
+            else:
+                lines = f.read().splitlines()
+
             for i in range(len(lines)):
                 data = lines[i].split(',')
                 dict = {}
@@ -60,9 +65,18 @@ def write_to_csv(cipher, names=None):
 key = get_hash_key()
 cipher = AES.new(key, AES.MODE_ECB)
 if 'all' in sys.argv:
-    write_to_csv(cipher)
+    if 'anonymize_header' in sys.argv:
+        write_to_csv(cipher, anonymize_header=True)
+    else:
+        write_to_csv(cipher)
+
 elif 'names' in sys.argv:
     column_names = raw_input("Please enter column names separeted by comma\n")
-    write_to_csv(cipher, column_names)
+    if 'anonymize_header' in sys.argv:
+        write_to_csv(cipher, column_names, anonymize_header=True)
+    else:
+        write_to_csv(cipher, column_names)
 else:
-    print "Availible arguments are:\n all - anonymize all column\n names - anonymize choosen columns\n\n Please try: python anonymizer.py all or python anonymizer.py names"
+    print "Availible arguments are:\n all - anonymize all column\n names - anonymize choosen columns\n\n " \
+          "Please try: python anonymizer.py all OR python anonymizer.py names" \
+          "\n OR python anonymizer.py all anonymize_header OR python anonymizer.py names anonymize_header" \

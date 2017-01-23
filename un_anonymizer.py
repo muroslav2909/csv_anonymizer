@@ -23,15 +23,27 @@ def get_header():
     f.close()
     return headers
 
-def write_to_csv(cipher, names=None):
+def write_to_csv(cipher, names=None, anonymize_header=False):
     with open('output2.csv', 'w') as csvfile:
         headers = get_header()
+
+        if anonymize_header:
+            result = []
+            for name in headers:
+                try:
+                    un_anonymized_data = un_anonymize_data(cipher, name).lstrip()
+                except:
+                    un_anonymized_data = name
+                result.append(un_anonymized_data)
+            headers = result
+
         fieldnames = headers
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
         with open("output1.csv") as f:
             lines = f.read().splitlines()[1:]
+
             for i in range(len(lines)):
                 data = lines[i].split(',')
                 dict = {}
@@ -51,15 +63,25 @@ def write_to_csv(cipher, names=None):
 
 key = get_hash_key()
 cipher = AES.new(key, AES.MODE_ECB)
-# write_to_csv(cipher)
 
 if 'all' in sys.argv:
-    write_to_csv(cipher)
+    if 'anonymize_header' in sys.argv:
+        write_to_csv(cipher, anonymize_header=True)
+    else:
+        write_to_csv(cipher)
+
 elif 'names' in sys.argv:
     column_names = raw_input("Please enter column names separeted by comma\n")
+
     try:
-        write_to_csv(cipher, column_names)
+        if 'anonymize_header' in sys.argv:
+            write_to_csv(cipher, column_names, anonymize_header=True)
+        else:
+            write_to_csv(cipher, column_names)
     except:
         print "Please, be sure that you are entered anonymize column names."
+
 else:
-    print "Availible arguments are:\n all - unanonymize all column\n names - unanonymize choosen columns\n\n Please try: python un_anonymizer.py all or python un_anonymizer.py names"
+    print "Availible arguments are:\n all - unanonymize all column\n names - unanonymize choosen columns\n\n " \
+          "Please try: python un_anonymizer.py all OR python un_anonymizer.py names" \
+          "\n OR python un_anonymizer.py all anonymize_header OR python un_anonymizer.py names anonymize_header"
