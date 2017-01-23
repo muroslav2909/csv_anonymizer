@@ -1,7 +1,7 @@
 with open('input_file.csv', 'rb') as original:
     with open('output2.csv', 'rb') as output:
-        original_lines = original.read().splitlines()[1:]
-        output_lines = output.read().splitlines()[1:]
+        original_lines = original.read().splitlines()
+        output_lines = output.read().splitlines()
         equal = 0
         not_equal = 0
         for i in range(len(original_lines)):
